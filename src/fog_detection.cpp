@@ -118,9 +118,9 @@ void process_fog_detection(float variance, uint32_t current_time)
                               cadence >= WALKING_CADENCE_MIN &&
                               cadence <= WALKING_CADENCE_MAX &&
                               variance >= WALKING_VARIANCE_MIN &&
-                              variance <= WALKING_VARIANCE_MAX &&
-                              tremor_intensity == 0 &&
-                              dysk_intensity == 0);
+                              variance <= WALKING_VARIANCE_MAX
+                              //tremor_intensity == 0 &&dysk_intensity == 0
+                            );
 
     // =========================================================================
     // Freeze Detection Logic

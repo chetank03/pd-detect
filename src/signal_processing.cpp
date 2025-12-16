@@ -45,7 +45,7 @@ void analyze_frequency_content(float* accel_data, float* gyro_data, size_t size,
     if (!fft_initialized) {
         arm_status st = arm_rfft_fast_init_f32(&fft_instance, FFT_SIZE);
         if (st != ARM_MATH_SUCCESS) {
-            printf("❌ FFT init failed\\n");
+            printf("❌ FFT init failed\n");
             return;
         }
         fft_initialized = true;
@@ -203,7 +203,7 @@ void process_window() {
     }
     last_window_time = current_time;
 
-    printf("\\n>>> [3-SEC WINDOW #%-4lu] ", (unsigned long)window_count);
+    printf("\n>>> [3-SEC WINDOW #%-4lu] ", (unsigned long)window_count);
     if (window_interval_sec > 0.0f) {
         printf("(%.1fs interval) | ", window_interval_sec);
     }

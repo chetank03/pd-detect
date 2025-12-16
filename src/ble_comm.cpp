@@ -58,7 +58,7 @@ class PDGapEventHandler : public ble::Gap::EventHandler {
     void onConnectionComplete(const ble::ConnectionCompleteEvent &event) override {
         if (event.getStatus() == BLE_ERROR_NONE) {
             ble_connected = true;
-            printf("\\n📱 BLE Device Connected!\\n\\n");
+            printf("\n📱 BLE Device Connected!\n\n");
         }
     }
     
@@ -71,11 +71,11 @@ class PDGapEventHandler : public ble::Gap::EventHandler {
      */
     void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event) override {
         ble_connected = false;
-        printf("\\n📱 BLE Device Disconnected\\n\\n");
+        printf("\n📱 BLE Device Disconnected\n\n");
         
         // Restart advertising
         ble_instance.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
-        printf("✓ Advertising restarted\\n\\n");
+        printf("✓ Advertising restarted\n\n");
     }
 };
 
@@ -120,11 +120,11 @@ void on_ble_init_complete(BLE::InitializationCompleteCallbackContext *params) {
     extern uint16_t fog_status;
     
     if (params->error != BLE_ERROR_NONE) {
-        printf("❌ BLE initialization failed\\n");
+        printf("❌ BLE initialization failed\n");
         return;
     }
     
-    printf("✓ BLE initialized successfully\\n");
+    printf("✓ BLE initialized successfully\n");
 
     BLE &ble = params->ble;
     gatt_server = &ble.gattServer();
@@ -183,7 +183,7 @@ void on_ble_init_complete(BLE::InitializationCompleteCallbackContext *params) {
     );
     
     if (error != BLE_ERROR_NONE) {
-        printf("❌ Failed to set advertising payload\\n");
+        printf("❌ Failed to set advertising payload\n");
         return;
     }
     
@@ -191,13 +191,13 @@ void on_ble_init_complete(BLE::InitializationCompleteCallbackContext *params) {
     error = ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
     
     if (error != BLE_ERROR_NONE) {
-        printf("❌ Failed to start advertising\\n");
+        printf("❌ Failed to start advertising\n");
         return;
     }
 
-    printf("✓ BLE advertising started\\n");
+    printf("✓ BLE advertising started\n");
     printf("✓ Device name: PD_Detector\n");
-    printf("✓ Ready to connect from phone!\\n\\n");
+    printf("✓ Ready to connect from phone!\n\n");
 }
 
 /**
@@ -255,9 +255,9 @@ void update_ble_characteristics() {
         );
 
         if (tremor_intensity > 0) {
-            printf("   📢 BLE NOTIFICATION: TREMOR intensity = %u\\n", tremor_intensity);
+            printf("   📢 BLE NOTIFICATION: TREMOR intensity = %u\n", tremor_intensity);
         } else {
-            printf("   📢 BLE NOTIFICATION: TREMOR cleared\\n");
+            printf("   📢 BLE NOTIFICATION: TREMOR cleared\n");
         }
 
         previous_tremor = tremor_intensity;
@@ -271,9 +271,9 @@ void update_ble_characteristics() {
         );
 
         if (dysk_intensity > 0) {
-            printf("   📢 BLE NOTIFICATION: DYSK intensity = %u\\n", dysk_intensity);
+            printf("   📢 BLE NOTIFICATION: DYSK intensity = %u\n", dysk_intensity);
         } else {
-            printf("   📢 BLE NOTIFICATION: DYSK cleared\\n");
+            printf("   📢 BLE NOTIFICATION: DYSK cleared\n");
         }
 
         previous_dysk = dysk_intensity;
@@ -287,15 +287,15 @@ void update_ble_characteristics() {
         );
 
         if (fog_status == 1) {
-            printf("   📢 BLE NOTIFICATION: FOG detected!\\n");
+            printf("   📢 BLE NOTIFICATION: FOG detected!\n");
         } else {
-            printf("   📢 BLE NOTIFICATION: FOG cleared\\n");
+            printf("   📢 BLE NOTIFICATION: FOG cleared\n");
         }
 
         previous_fog = fog_status;
     }
 
     if (tremor_changed || dysk_changed || fog_changed) {
-        printf("   BLE characteristics updated and notifications sent!\\n");
+        printf("   BLE characteristics updated and notifications sent!\n");
     }
 }

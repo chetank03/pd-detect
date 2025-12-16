@@ -101,61 +101,61 @@ bool read_burst(uint8_t start_reg, uint8_t *buffer, uint8_t length) {
  *       - Low power consumption
  */
 bool init_lsm6dsl() {
-    printf("\\n=== Initializing LSM6DSL Sensor ===\\n");
+    printf("\n=== Initializing LSM6DSL Sensor ===\n");
     
     // Step 1: Check WHO_AM_I register
-    printf("1. Checking WHO_AM_I register...\\n");
+    printf("1. Checking WHO_AM_I register...\n");
     uint8_t who_am_i = 0;
     if (!read_register(WHO_AM_I, who_am_i)) {
-        printf("   ❌ ERROR: Cannot read WHO_AM_I register\\n");
+        printf("   ❌ ERROR: Cannot read WHO_AM_I register\n");
         return false;
     }
 
-    printf("   WHO_AM_I = 0x%02X (expected 0x%02X)\\n", who_am_i, LSM6DSL_WHO_AM_I_VAL);
+    printf("   WHO_AM_I = 0x%02X (expected 0x%02X)\n", who_am_i, LSM6DSL_WHO_AM_I_VAL);
     
     if (who_am_i != LSM6DSL_WHO_AM_I_VAL) {
-        printf("   ❌ ERROR: Wrong device ID\\n");
+        printf("   ❌ ERROR: Wrong device ID\n");
         return false;
     }
-    printf("   ✓ Correct device detected\\n\\n");
+    printf("   ✓ Correct device detected\n\n");
     
     // Step 2: Configure CTRL3_C (Common settings)
-    printf("2. Configuring common settings (CTRL3_C)...\\n");
+    printf("2. Configuring common settings (CTRL3_C)...\n");
     if (!write_register(CTRL3_C, 0x44)) {
-        printf("   ❌ ERROR: Cannot write CTRL3_C\\n");
+        printf("   ❌ ERROR: Cannot write CTRL3_C\n");
         return false;
     }
-    printf("   ✓ BDU and auto-increment enabled\\n\\n");
+    printf("   ✓ BDU and auto-increment enabled\n\n");
     
     // Step 3: Configure Accelerometer (CTRL1_XL)
-    printf("3. Configuring accelerometer (CTRL1_XL)...\\n");
+    printf("3. Configuring accelerometer (CTRL1_XL)...\n");
     if (!write_register(CTRL1_XL, 0x30)) {
-        printf("   ❌ ERROR: Cannot write CTRL1_XL\\n");
+        printf("   ❌ ERROR: Cannot write CTRL1_XL\n");
         return false;
     }
-    printf("   ✓ Accelerometer: 52Hz, ±2g\\n\\n");
+    printf("   ✓ Accelerometer: 52Hz, ±2g\n\n");
     
     // Step 4: Configure Gyroscope (CTRL2_G)
-    printf("4. Configuring gyroscope (CTRL2_G)...\\n");
+    printf("4. Configuring gyroscope (CTRL2_G)...\n");
     if (!write_register(CTRL2_G, 0x30)) {
-        printf("   ❌ ERROR: Cannot write CTRL2_G\\n");
+        printf("   ❌ ERROR: Cannot write CTRL2_G\n");
         return false;
     }
-    printf("   ✓ Gyroscope: 52Hz, ±250dps\\n\\n");
+    printf("   ✓ Gyroscope: 52Hz, ±250dps\n\n");
     
     // Step 5: Configure INT1 pin for data-ready
-    printf("5. Configuring INT1 pin (INT1_CTRL)...\\n");
+    printf("5. Configuring INT1 pin (INT1_CTRL)...\n");
     if (!write_register(INT1_CTRL, 0x03)) {
-        printf("   ❌ ERROR: Cannot write INT1_CTRL\\n");
+        printf("   ❌ ERROR: Cannot write INT1_CTRL\n");
         return false;
     }
-    printf("   ✓ INT1 configured for accel+gyro data-ready\\n\\n");
+    printf("   ✓ INT1 configured for accel+gyro data-ready\n\n");
     
     // Step 6: Clear any pending data by reading STATUS_REG
     uint8_t dummy;
     read_register(STATUS_REG, dummy);
 
-    printf("=== LSM6DSL Initialization Complete ===\\n\\n");
+    printf("=== LSM6DSL Initialization Complete ===\n\n");
     return true;
 }
 
