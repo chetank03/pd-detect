@@ -1,49 +1,13 @@
 /**
  * @file led_control.cpp
- * @brief LED pattern control implementation
-
+ * @brief LED pattern control
  */
 
 #include "led_control.h"
 
-// =============================================================================
-// Hardware Objects
-// =============================================================================
-
+// Hardware
 DigitalOut led(LED1);
 
-// =============================================================================
-// LED Control Functions
-// =============================================================================
-
-/**
- * @brief Update LED pattern based on current detection state
- * 
- * Implements priority-based visual indication system:
- * 
- * Priority 1 - FOG (Highest):
- * - Pattern: Triple-blink alarm (ON-OFF-ON-OFF-ON-OFF, pause)
- * - Timing: 100ms ON, 100ms OFF, repeated 3x, then 500ms pause
- * - Total cycle: 1000ms
- * - Purpose: Urgent alarm for freezing episodes
- * 
- * Priority 2 - Tremor:
- * - Pattern: 2 Hz blink (500ms period)
- * - Duty cycle: 20-80% proportional to intensity
- * - Purpose: Indicate tremor severity visually
- * 
- * Priority 3 - Dyskinesia:
- * - Pattern: 4 Hz blink (250ms period)
- * - Duty cycle: 20-80% proportional to intensity  
- * - Purpose: Indicate dyskinesia severity visually
- * 
- * Priority 4 - Normal (Lowest):
- * - Pattern: Slow heartbeat (2000ms period, 10% duty)
- * - Purpose: System alive indicator
- * 
- * @note Uses phase-based timing (modulo arithmetic) for jitter-free patterns
- * @note Called continuously from main loop for smooth transitions
- */
 void update_led_indication() {
     extern uint16_t tremor_intensity;
     extern uint16_t dysk_intensity;
@@ -51,10 +15,7 @@ void update_led_indication() {
     
     uint32_t now = Kernel::get_ms_count();
     
-    // Priority: FOG > Tremor > Dyskinesia > None
     if (fog_status == 1) {
-        // FOG ALARM: Triple-blink pattern (ON-OFF-ON-OFF-ON-OFF, then pause)
-        // Pattern: 100ms ON, 100ms OFF, 100ms ON, 100ms OFF, 100ms ON, 500ms OFF = 1000ms total
         uint32_t phase = now % FOG_CYCLE_PERIOD_MS;
         bool blink_on = ((phase < 100) || (phase >= 200 && phase < 300) || (phase >= 400 && phase < 500));
         led = blink_on;

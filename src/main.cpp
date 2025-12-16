@@ -1,16 +1,6 @@
 /**
  * @file main.cpp
- * @brief Parkinson's Disease Movement Detection System - Main Application
-
- * 
- * @description
- * Main application entry point and control loop for the Parkinson's Disease
- * movement detection system. Coordinates all subsystems including:
- * - Sensor data acquisition
- * - Signal processing and FFT analysis
- * - FOG detection
- * - BLE communication
- * - LED visual indication
+ * @brief Parkinson's Disease Movement Detection System
  */
 
 #include "mbed.h"
@@ -21,28 +11,13 @@
 #include "ble_comm.h"
 #include "led_control.h"
 
-// =============================================================================
-// Serial Console Configuration
-// =============================================================================
+// Serial console
 
 BufferedSerial serial_port(USBTX, USBRX, 115200);
 FileHandle *mbed::mbed_override_console(int) {
     return &serial_port;
 }
 
-// =============================================================================
-// Main Application Entry Point
-// =============================================================================
-
-/**
- * @brief Main application function
- * @return int Program exit code (never returns in embedded context)
- * 
- * @note Initializes hardware, sensors, BLE, and runs main detection loop:
- *       1. Hardware setup (I2C, interrupts, BLE)
- *       2. Sensor configuration and validation
- *       3. Main loop: data acquisition, processing, and transmission
- */
 int main() {
     // Clear screen and position cursor at top
     printf("\033[2J\033[H");

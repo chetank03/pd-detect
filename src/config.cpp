@@ -1,15 +1,12 @@
 /**
  * @file config.cpp
- * @brief Configuration constants implementation
-
+ * @brief Configuration constants
  */
 
 #include "config.h"
 #include "ble/BLE.h"
 
-// =============================================================================
-// BLE UUID Constants
-// =============================================================================
+// BLE UUID constants
 
 const char* PD_SERVICE_UUID_STR = "A0E1B2C3-D4E5-F6A7-B8C9-D0E1F2A3B4C5";
 const char* TREMOR_CHAR_UUID_STR = "A1E2B3C4-D5E6-F7A8-B9C0-D1E2F3A4B5C6";

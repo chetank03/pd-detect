@@ -79,7 +79,7 @@ extern uint16_t steps_in_window;        // Steps detected in current 3-second wi
 extern bool above_step_threshold;       // Current state of step detection threshold
 extern uint32_t last_step_time_ms;      // Timestamp of most recent detected step (ms)
 extern float accel_baseline_ema;        // Adaptive baseline for step threshold (g)
-extern uint16_t fog_status;             // BLE characteristic: 0=Normal, 1=FOG detected
+extern uint8_t fog_status;              // BLE characteristic: 0=Normal, 1=FOG detected
 
 // =============================================================================
 // Function Declarations
