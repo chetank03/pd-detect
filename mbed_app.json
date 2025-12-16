@@ -1,0 +1,9 @@
+{
+  "target_overrides": {
+    "*": {
+      "target.components_add": ["BLE"],
+      "platform.minimal-printf-enable-floating-point": true
+      
+    }
+  }
+}
