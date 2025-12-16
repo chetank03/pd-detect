@@ -1,7 +1,6 @@
 /**
  * @file config.h
- * @brief Configuration constants and parameters for Parkinson's Disease Detection System
-
+ * @brief Configuration constants and parameters
  */
 
 #ifndef CONFIG_H
@@ -11,9 +10,7 @@
 #include "ble/BLE.h"
 #include "ble/UUID.h"
 
-// =============================================================================
-// Hardware Configuration
-// =============================================================================
+// Hardware configuration
 
 // LSM6DSL Sensor Register Map
 #define LSM6DSL_ADDR        (0x6A << 1)  // I2C device address (7-bit left-shifted)
@@ -27,16 +24,10 @@
 #define OUTX_L_G            0x22  // Gyroscope data start address
 #define LSM6DSL_WHO_AM_I_VAL  0x6A // Device identification value
 
-// =============================================================================
-// Signal Processing Configuration
-// =============================================================================
-
-/** Target sampling frequency for motion data acquisition */
+// Signal processing
 const float TARGET_SAMPLE_RATE_HZ = 52.0f;
-
-/** Analysis window parameters for frequency domain processing */
-const size_t WINDOW_SIZE = 156;  // 3.0 seconds × 52 Hz = 156 samples
-const size_t FFT_SIZE = 256;     // Zero-padded to next power of 2 for efficiency
+const size_t WINDOW_SIZE = 156;
+const size_t FFT_SIZE = 256;
 
 // =============================================================================
 // Detection Parameters
@@ -48,7 +39,7 @@ const uint8_t CLEAR_CONFIRM_WINDOWS = 3;      // Need 3 consecutive windows (~9 
 const float EMA_ALPHA = 0.3f;                 // More stable smoothing for medical reliability
 
 /** Step detection parameters (tuned for vertical axis sensitivity) */
-const float STEP_THRESHOLD = 0.05f;          // Lowered from 0.10f - more sensitive step detection
+const float STEP_THRESHOLD = 0.03f;          // Lowered from 0.10f - more sensitive step detection
 const uint32_t MIN_STEP_INTERVAL_MS = 100;   // Lowered from 150ms - faster step detection
 
 /** LED pattern timing constants for different detection states */

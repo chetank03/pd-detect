@@ -51,9 +51,9 @@ void process_fog_detection(float variance, uint32_t current_time)
 
     // Detection thresholds
     const float WALKING_CADENCE_MIN = 10.0f;
-    const float WALKING_CADENCE_MAX = 150.0f;
-    const float WALKING_VARIANCE_MIN = 0.005f;
-    const float WALKING_VARIANCE_MAX = 0.40f;
+    const float WALKING_CADENCE_MAX = 250.0f;
+    const float WALKING_VARIANCE_MIN = 0.002f;
+    const float WALKING_VARIANCE_MAX = 0.50f;
     const uint32_t MIN_STEPS_FOR_WALKING = 2;
     
     const float FREEZE_CADENCE_MAX = 12.0f;
