@@ -8,13 +8,18 @@
 #include "fog_detection.h"
 
 // BLE objects and state
-events::EventQueue ble_event_queue(16 * EVENTS_EVENT_SIZE);  // Event processing queue
+events::EventQueue ble_event_queue(16 * EVENTS_EVENT_SIZE);
 BLE &ble_instance = BLE::Instance();
 GattCharacteristic *tremor_char = nullptr;
 GattCharacteristic *dysk_char = nullptr;
 GattCharacteristic *fog_char = nullptr;
 GattServer *gatt_server = nullptr;
 bool ble_connected = false;
+
+// String buffers for BLE characteristics
+static char tremor_buffer[32] = "TREMOR:0";
+static char dysk_buffer[32] = "DYSK:0";
+static char fog_buffer[32] = "FOG:0";
 
 // Previous values for change detection
 static uint16_t previous_tremor = 0;
@@ -64,25 +69,25 @@ void on_ble_init_complete(BLE::InitializationCompleteCallbackContext *params) {
     // Create three GATT characteristics: tremor, dyskinesia, FOG
     tremor_char = new GattCharacteristic(
         TREMOR_CHAR_UUID_STR,
-        (uint8_t*)&tremor_intensity,
-        sizeof(tremor_intensity),
-        sizeof(tremor_intensity),
+        (uint8_t*)tremor_buffer,
+        32,
+        32,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY
     );
     
     dysk_char = new GattCharacteristic(
         DYSK_CHAR_UUID_STR,
-        (uint8_t*)&dysk_intensity,
-        sizeof(dysk_intensity),
-        sizeof(dysk_intensity),
+        (uint8_t*)dysk_buffer,
+        32,
+        32,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY
     );
     
     fog_char = new GattCharacteristic(
         FOG_CHAR_UUID_STR,
-        (uint8_t*)&fog_status,
-        sizeof(fog_status),
-        sizeof(fog_status),
+        (uint8_t*)fog_buffer,
+        32,
+        32,
         GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_READ | GattCharacteristic::BLE_GATT_CHAR_PROPERTIES_NOTIFY
     );
     
@@ -148,14 +153,16 @@ void update_ble_characteristics() {
     bool fog_changed = (fog_status != previous_fog);
 
     if (tremor_changed) {
+        snprintf(tremor_buffer, sizeof(tremor_buffer), "TREMOR:%u", tremor_intensity);
+        
         gatt_server->write(
             tremor_char->getValueHandle(),
-            (uint8_t*)&tremor_intensity,
-            sizeof(tremor_intensity)
+            (uint8_t*)tremor_buffer,
+            strlen(tremor_buffer)
         );
 
         if (tremor_intensity > 0) {
-            printf("   📢 BLE NOTIFICATION: TREMOR intensity = %u\n", tremor_intensity);
+            printf("   📢 BLE NOTIFICATION: %s\n", tremor_buffer);
         } else {
             printf("   📢 BLE NOTIFICATION: TREMOR cleared\n");
         }
@@ -164,14 +171,16 @@ void update_ble_characteristics() {
     }
 
     if (dysk_changed) {
+        snprintf(dysk_buffer, sizeof(dysk_buffer), "DYSK:%u", dysk_intensity);
+        
         gatt_server->write(
             dysk_char->getValueHandle(),
-            (uint8_t*)&dysk_intensity,
-            sizeof(dysk_intensity)
+            (uint8_t*)dysk_buffer,
+            strlen(dysk_buffer)
         );
 
         if (dysk_intensity > 0) {
-            printf("   📢 BLE NOTIFICATION: DYSK intensity = %u\n", dysk_intensity);
+            printf("   📢 BLE NOTIFICATION: %s\n", dysk_buffer);
         } else {
             printf("   📢 BLE NOTIFICATION: DYSK cleared\n");
         }
@@ -180,14 +189,16 @@ void update_ble_characteristics() {
     }
 
     if (fog_changed) {
+        snprintf(fog_buffer, sizeof(fog_buffer), "FOG:%u", fog_status);
+        
         gatt_server->write(
             fog_char->getValueHandle(),
-            (uint8_t*)&fog_status,
-            sizeof(fog_status)
+            (uint8_t*)fog_buffer,
+            strlen(fog_buffer)
         );
 
         if (fog_status == 1) {
-            printf("   📢 BLE NOTIFICATION: FOG detected!\n");
+            printf("   📢 BLE NOTIFICATION: %s (detected!)\n", fog_buffer);
         } else {
             printf("   📢 BLE NOTIFICATION: FOG cleared\n");
         }
