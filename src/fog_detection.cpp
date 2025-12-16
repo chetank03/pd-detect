@@ -298,7 +298,6 @@ void process_fog_detection(float variance, uint32_t current_time)
     case FOG_FREEZE_CONFIRMED:
     {
         // Static variable tracks when freeze was first confirmed
-        // TODO: Consider moving to FOGDetector struct for better encapsulation
         static uint32_t freeze_confirmed_start = 0;
 
         // Initialize timestamp on first entry to this state
