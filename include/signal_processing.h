@@ -1,8 +1,7 @@
 /**
  * @file signal_processing.h
  * @brief FFT analysis and frequency domain processing for tremor/dyskinesia detection
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #ifndef SIGNAL_PROCESSING_H

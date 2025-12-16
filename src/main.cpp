@@ -1,8 +1,7 @@
 /**
  * @file main.cpp
  * @brief Parkinson's Disease Movement Detection System - Main Application
- * @author RTES Challenge Implementation
- * @date December 2025
+
  * 
  * @description
  * Main application entry point and control loop for the Parkinson's Disease

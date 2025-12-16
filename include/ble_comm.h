@@ -1,8 +1,7 @@
 /**
  * @file ble_comm.h
  * @brief Bluetooth Low Energy communication interface
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #ifndef BLE_COMM_H

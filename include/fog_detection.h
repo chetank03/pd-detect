@@ -1,8 +1,7 @@
 /**
  * @file fog_detection.h
  * @brief Freezing of Gait (FOG) detection system - Header file
- * @author RTES Challenge Implementation
- * @date December 2025
+
  * 
  * @description
  * Implements a 4-state machine for detecting Freezing of Gait episodes in
@@ -62,6 +61,7 @@ struct FOGDetector {
     FOGState state;                          // Current state in the state machine
     uint32_t walking_start_time;             // Timestamp when walking began (ms)
     uint32_t freeze_start_time;              // Timestamp when freeze indicators first appeared (ms)
+    uint32_t freeze_confirmed_start;         // Timestamp when freeze was confirmed (ms)
     float previous_cadence;                  // Cadence from previous window (steps/min)
     uint8_t consecutive_walking_windows;     // Count of consecutive walking windows
     uint8_t consecutive_freeze_windows;      // Count of consecutive freeze windows

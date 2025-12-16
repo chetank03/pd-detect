@@ -1,8 +1,7 @@
 /**
  * @file led_control.h
  * @brief LED pattern control for visual indication of detection states
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #ifndef LED_CONTROL_H

@@ -1,8 +1,7 @@
 /**
  * @file ble_comm.cpp
  * @brief Bluetooth Low Energy communication implementation
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #include "ble_comm.h"

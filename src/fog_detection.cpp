@@ -1,8 +1,7 @@
 /**
  * @file fog_detection.cpp
  * @brief Freezing of Gait (FOG) detection system implementation
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #include "fog_detection.h"
@@ -25,7 +24,7 @@ extern uint16_t dysk_intensity;
 // =============================================================================
 
 // Main FOG detector state machine instance
-FOGDetector fog_detector = {FOG_NOT_WALKING, 0, 0, 0.0f, 0, 0};
+FOGDetector fog_detector = {FOG_NOT_WALKING, 0, 0, 0, 0.0f, 0, 0};
 
 // Step detection variables (shared with signal_processing.cpp)
 uint16_t steps_in_window = 0;          // Steps detected in current 3-second window
@@ -50,6 +49,7 @@ void init_fog_detection()
     fog_detector.state = FOG_NOT_WALKING;
     fog_detector.walking_start_time = 0;
     fog_detector.freeze_start_time = 0;
+    fog_detector.freeze_confirmed_start = 0;
     fog_detector.previous_cadence = 0.0f;
     fog_detector.consecutive_walking_windows = 0;
     fog_detector.consecutive_freeze_windows = 0;
@@ -135,24 +135,6 @@ void process_fog_detection(float variance, uint32_t current_time)
     bool freeze_indicators = (cadence < FREEZE_CADENCE_MAX &&
                               variance < FREEZE_VARIANCE_MAX &&
                               fog_detector.walking_start_time > 0);
-
-    // Print FOG status based on actual state machine
-    printf(" | FOG: ");
-    switch (fog_detector.state)
-    {
-    case FOG_NOT_WALKING:
-        printf("NotWalking");
-        break;
-    case FOG_WALKING:
-        printf("Walk");
-        break;
-    case FOG_POTENTIAL_FREEZE:
-        printf("Freeze?");
-        break;
-    case FOG_FREEZE_CONFIRMED:
-        printf("FOG!");
-        break;
-    }
 
     // =========================================================================
     // Safety Check: Prevent Invalid State
@@ -297,16 +279,13 @@ void process_fog_detection(float variance, uint32_t current_time)
     // -------------------------------------------------------------------------
     case FOG_FREEZE_CONFIRMED:
     {
-        // Static variable tracks when freeze was first confirmed
-        static uint32_t freeze_confirmed_start = 0;
-
         // Initialize timestamp on first entry to this state
-        if (freeze_confirmed_start == 0)
+        if (fog_detector.freeze_confirmed_start == 0)
         {
-            freeze_confirmed_start = current_time;
+            fog_detector.freeze_confirmed_start = current_time;
         }
 
-        uint32_t confirmed_duration = current_time - freeze_confirmed_start;
+        uint32_t confirmed_duration = current_time - fog_detector.freeze_confirmed_start;
         const uint32_t MAX_FOG_DURATION_MS = 15000;  // 15-second timeout
 
         // Recovery detection: Use more relaxed criteria than normal walking detection
@@ -320,7 +299,7 @@ void process_fog_detection(float variance, uint32_t current_time)
             fog_detector.consecutive_freeze_windows = 0;
             fog_detector.consecutive_walking_windows = 1;  // Reset to 1 (currently walking)
             fog_detector.walking_start_time = current_time;  // Reset walking start time
-            freeze_confirmed_start = 0;  // Reset static variable
+            fog_detector.freeze_confirmed_start = 0;  // Reset timestamp
             printf(" | Recovered");  // Log recovery event
         }
         else
@@ -330,6 +309,26 @@ void process_fog_detection(float variance, uint32_t current_time)
         }
         break;
     }
+    }
+
+    // =========================================================================
+    // Print FOG Status (AFTER state machine processing)
+    // =========================================================================
+    printf(" | FOG: ");
+    switch (fog_detector.state)
+    {
+    case FOG_NOT_WALKING:
+        printf("NotWalking");
+        break;
+    case FOG_WALKING:
+        printf("Walk");
+        break;
+    case FOG_POTENTIAL_FREEZE:
+        printf("Freeze?");
+        break;
+    case FOG_FREEZE_CONFIRMED:
+        printf("FOG!");
+        break;
     }
 
     // =========================================================================

@@ -1,8 +1,7 @@
 /**
  * @file sensor.cpp
  * @brief LSM6DSL sensor interface and data acquisition implementation
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #include "sensor.h"

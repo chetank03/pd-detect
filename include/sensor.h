@@ -1,8 +1,7 @@
 /**
  * @file sensor.h
  * @brief LSM6DSL sensor interface and data acquisition functions
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #ifndef SENSOR_H

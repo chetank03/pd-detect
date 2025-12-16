@@ -1,8 +1,7 @@
 /**
  * @file config.h
  * @brief Configuration constants and parameters for Parkinson's Disease Detection System
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #ifndef CONFIG_H
@@ -44,7 +43,7 @@ const size_t FFT_SIZE = 256;     // Zero-padded to next power of 2 for efficienc
 // =============================================================================
 
 /** Multi-window confirmation system */
-const uint8_t DETECTION_CONFIRM_WINDOWS = 2;  // Need 2 consecutive windows (~6 sec) for realistic confirmation
+const uint8_t DETECTION_CONFIRM_WINDOWS = 3;  // Need 3 consecutive windows (~9 sec) for realistic confirmation
 const uint8_t CLEAR_CONFIRM_WINDOWS = 3;      // Need 3 consecutive windows (~9 sec) to clear symptoms
 const float EMA_ALPHA = 0.3f;                 // More stable smoothing for medical reliability
 

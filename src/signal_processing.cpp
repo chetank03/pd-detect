@@ -1,8 +1,7 @@
 /**
  * @file signal_processing.cpp
  * @brief FFT analysis and frequency domain processing implementation
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #include "signal_processing.h"
@@ -177,21 +176,6 @@ void analyze_frequency_content(float* accel_data, float* gyro_data, size_t size,
         printf("🔴 TREMOR %.2fHz ", tremor_freq);
     } else if (strcmp(condition, "DYSK") == 0) {
         printf("🟠 DYSK %.2fHz ", dysk_freq);
-    } else {
-        // Show the dominant frequency even when nothing detected
-        // Search entire spectrum for actual peak
-        float max_mag = 0.0f;
-        float max_freq = 0.0f;
-        for (size_t k = 1; k <= (FFT_SIZE/2 - 1); k++) {
-            float f = k * freq_res;
-            if (f < 2.0f || f > 10.0f) continue;  // Only show 2-10 Hz range
-            float mag = magnitude_spectrum[k - 1];
-            if (mag > max_mag) {
-                max_mag = mag;
-                max_freq = f;
-            }
-        }
-        printf("⚪ %.2fHz ", max_freq);
     }
 }
 
@@ -275,13 +259,13 @@ void process_window() {
     }
     
     // Determine confirmed intensities based on consecutive windows
-    // Confirm tremor if detected in 2 consecutive windows (~6 sec)
+    // Confirm tremor if detected in 3 consecutive windows (~9 sec)
     if (detection_state.tremor_consecutive >= DETECTION_CONFIRM_WINDOWS) {
         tremor_intensity = (uint16_t)(detection_state.tremor_ema_intensity * 500.0f);  // Scale to 0-1000
         if (tremor_intensity > 1000) tremor_intensity = 1000;
         dysk_intensity = 0;  // Clear other condition
     }
-    // Confirm dyskinesia if detected in 2 consecutive windows (~6 sec)
+    // Confirm dyskinesia if detected in 3 consecutive windows (~9 sec)
     else if (detection_state.dysk_consecutive >= DETECTION_CONFIRM_WINDOWS) {
         dysk_intensity = (uint16_t)(detection_state.dysk_ema_intensity * 500.0f);  // Scale to 0-1000
         if (dysk_intensity > 1000) dysk_intensity = 1000;

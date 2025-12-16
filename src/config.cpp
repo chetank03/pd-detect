@@ -1,8 +1,7 @@
 /**
  * @file config.cpp
  * @brief Configuration constants implementation
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #include "config.h"

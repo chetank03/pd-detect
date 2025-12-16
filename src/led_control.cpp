@@ -1,8 +1,7 @@
 /**
  * @file led_control.cpp
  * @brief LED pattern control implementation
- * @author RTES Challenge Implementation
- * @date December 2025
+
  */
 
 #include "led_control.h"
