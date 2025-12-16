@@ -30,11 +30,31 @@ static uint16_t previous_fog = 0;
 // BLE Event Handlers
 // =============================================================================
 
+/**
+ * @brief Schedule BLE events for processing on event queue
+ * 
+ * Ensures BLE stack events are processed in non-interrupt context.
+ * Called automatically by BLE stack when events are pending.
+ * 
+ * @param context BLE event context
+ */
 void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context) {
     ble_event_queue.call(Callback<void()>(&context->ble, &BLE::processEvents));
 }
 
+/**
+ * @brief GAP event handler for connection state changes
+ * 
+ * Handles BLE connection and disconnection events:
+ * - Updates connection state flag
+ * - Logs connection changes to console
+ * - Automatically restarts advertising after disconnect
+ */
 class PDGapEventHandler : public ble::Gap::EventHandler {
+    /**
+     * @brief Handle successful BLE connection
+     * @param event Connection complete event with status
+     */
     void onConnectionComplete(const ble::ConnectionCompleteEvent &event) override {
         if (event.getStatus() == BLE_ERROR_NONE) {
             ble_connected = true;
@@ -42,6 +62,13 @@ class PDGapEventHandler : public ble::Gap::EventHandler {
         }
     }
     
+    /**
+     * @brief Handle BLE disconnection
+     * @param event Disconnection event
+     * 
+     * Automatically restarts advertising to allow reconnection.
+     * Client can reconnect without device reset.
+     */
     void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event) override {
         ble_connected = false;
         printf("\\n📱 BLE Device Disconnected\\n\\n");
@@ -55,8 +82,37 @@ class PDGapEventHandler : public ble::Gap::EventHandler {
 static PDGapEventHandler gap_event_handler;
 
 // =============================================================================
-// BLE Initialization
+// BLE Initialization and Setup
 // =============================================================================
+
+/**
+ * @brief BLE initialization completion callback
+ * 
+ * Called automatically when BLE stack initialization completes.
+ * Sets up GATT service with three characteristics:
+ * 
+ * 1. Tremor Intensity (uint16_t, 0-1000)
+ *    - UUID: TREMOR_CHAR_UUID_STR
+ *    - Properties: READ | NOTIFY
+ *    - Updates when tremor detected
+ * 
+ * 2. Dyskinesia Intensity (uint16_t, 0-1000)
+ *    - UUID: DYSK_CHAR_UUID_STR  
+ *    - Properties: READ | NOTIFY
+ *    - Updates when dyskinesia detected
+ * 
+ * 3. FOG Status (uint16_t, 0 or 1)
+ *    - UUID: FOG_CHAR_UUID_STR
+ *    - Properties: READ | NOTIFY
+ *    - 0 = Normal walking, 1 = FOG detected
+ * 
+ * Configures advertising:
+ * - Device name: "PD_Detector"
+ * - Connectable undirected advertising
+ * - 1-second advertising interval
+ * 
+ * @param params Initialization context with error status
+ */
 
 void on_ble_init_complete(BLE::InitializationCompleteCallbackContext *params) {
     extern uint16_t tremor_intensity;
@@ -144,6 +200,18 @@ void on_ble_init_complete(BLE::InitializationCompleteCallbackContext *params) {
     printf("✓ Ready to connect from phone!\\n\\n");
 }
 
+/**
+ * @brief Initialize BLE communication system
+ * 
+ * Setup sequence:
+ * 1. Register event scheduling callback
+ * 2. Register GAP event handler for connections
+ * 3. Start BLE initialization (async)
+ * 4. Wait for on_ble_init_complete callback
+ * 
+ * @note Initialization is asynchronous
+ * @note on_ble_init_complete() will be called when ready
+ */
 void init_ble() {
     ble_instance.onEventsToProcess(schedule_ble_events);
     ble_instance.gap().setEventHandler(&gap_event_handler);
@@ -154,6 +222,20 @@ void init_ble() {
 // BLE Communication Functions  
 // =============================================================================
 
+/**
+ * @brief Update BLE characteristics and send notifications on changes
+ * 
+ * Reads current detection values and updates GATT characteristics if connected.
+ * Sends notifications only when values change to minimize BLE traffic.
+ * 
+ * Change detection:
+ * - Compares current values with previous cached values
+ * - Only notifies connected clients when values differ
+ * - Reduces power consumption and radio congestion
+ * 
+ * @note Should be called regularly from main loop (every few seconds)
+ * @note Does nothing if no BLE client is connected
+ */
 void update_ble_characteristics() {
     extern uint16_t tremor_intensity;
     extern uint16_t dysk_intensity;

@@ -83,6 +83,23 @@ bool read_burst(uint8_t start_reg, uint8_t *buffer, uint8_t length) {
 // Sensor Initialization
 // =============================================================================
 
+/**
+ * @brief Initialize and configure LSM6DSL IMU sensor
+ * 
+ * Configuration sequence:
+ * 1. Verify device identity via WHO_AM_I register (0x6A expected)
+ * 2. Configure common settings (BDU + auto-increment)
+ * 3. Enable accelerometer: 52 Hz ODR, ±2g full scale
+ * 4. Enable gyroscope: 52 Hz ODR, ±250 dps full scale
+ * 5. Configure INT1 pin for data-ready interrupts
+ * 
+ * @return true if initialization successful, false on any error
+ * 
+ * @note Sample rate of 52 Hz chosen for:
+ *       - Nyquist coverage of 3-7 Hz PD symptom frequencies
+ *       - Efficient 3-second windows (156 samples)
+ *       - Low power consumption
+ */
 bool init_lsm6dsl() {
     printf("\\n=== Initializing LSM6DSL Sensor ===\\n");
     
@@ -146,6 +163,15 @@ bool init_lsm6dsl() {
 // Interrupt Service Routine
 // =============================================================================
 
+/**
+ * @brief Hardware interrupt handler for LSM6DSL data-ready signal
+ * 
+ * Triggered by INT1 pin when both accelerometer and gyroscope data are ready.
+ * Sets flags for main loop to process. Keeps ISR minimal for low latency.
+ * 
+ * @note Runs in interrupt context - no printf, no blocking operations
+ * @note Uses volatile flags for thread-safe communication with main loop
+ */
 void data_ready_isr() {
     new_data_available = true;
     interrupt_count++;
@@ -156,6 +182,25 @@ void data_ready_isr() {
 // Data Acquisition
 // =============================================================================
 
+/**
+ * @brief Read sensor data and perform step detection
+ * 
+ * Processing pipeline:
+ * 1. Read 12 bytes via I2C burst: 6 for accel (X,Y,Z), 6 for gyro (X,Y,Z)
+ * 2. Convert raw 16-bit values to physical units (g, dps)
+ * 3. Calculate magnitude vectors for both sensors
+ * 4. Perform real-time step detection using Z-axis threshold crossing
+ * 5. Buffer magnitude data for 3-second window FFT analysis
+ * 
+ * Step detection algorithm:
+ * - Uses Z-axis acceleration only (vertical movement characteristic of steps)
+ * - Adaptive threshold based on EMA baseline tracking
+ * - Rising edge detection with debounce (minimum 100ms interval)
+ * - Increments steps_in_window counter for FOG cadence calculation
+ * 
+ * @note Called from main loop when data_ready_isr() sets flag
+ * @note Fills circular buffer; sets window_ready when WINDOW_SIZE samples collected
+ */
 void read_sensor_data() {
     // Read raw accelerometer data (6 bytes: X,Y,Z as 16-bit each) - BURST READ
     uint8_t accel_data[6];
