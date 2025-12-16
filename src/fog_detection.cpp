@@ -183,9 +183,9 @@ void process_fog_detection(float variance, uint32_t current_time)
         {
             fog_detector.consecutive_walking_windows++;
 
-            // Transition to WALKING after 1 window of walking detected
-            // (Can increase threshold if false positives occur)
-            if (fog_detector.consecutive_walking_windows >= 1)
+            // Require 2 consecutive walking windows (~6 seconds) to confirm walking
+            // This prevents false positives from brief movements or single steps
+            if (fog_detector.consecutive_walking_windows >= 2)
             {
                 fog_detector.state = FOG_WALKING;
                 fog_detector.walking_start_time = current_time;  // Record when walking started
@@ -210,29 +210,48 @@ void process_fog_detection(float variance, uint32_t current_time)
         if (currently_walking)
         {
             // Continue in walking state - patient is still walking normally
+            fog_detector.consecutive_walking_windows++;
+            fog_detector.consecutive_freeze_windows = 0;  // Reset freeze counter
         }
         else if (freeze_indicators)
         {
-            // Freeze indicators detected - check if walked long enough
-            if (walking_duration >= MIN_WALKING_DURATION_MS)
+            // Freeze indicators detected - increment counter
+            fog_detector.consecutive_freeze_windows++;
+            fog_detector.consecutive_walking_windows = 0;
+            
+            // Require 2 consecutive freeze windows AND minimum walking duration
+            // This prevents false FOG from brief pauses during walking
+            if (fog_detector.consecutive_freeze_windows >= 2 && 
+                walking_duration >= MIN_WALKING_DURATION_MS)
             {
-                // Walked ≥2 seconds, now showing freeze - transition to potential freeze
+                // Walked ≥2 seconds, now showing sustained freeze - transition to potential freeze
                 fog_detector.state = FOG_POTENTIAL_FREEZE;
                 fog_detector.freeze_start_time = current_time;
                 fog_detector.consecutive_freeze_windows = 1;
             }
-            else
+            else if (walking_duration < MIN_WALKING_DURATION_MS)
             {
                 // Brief walking (<2s) then stopped - not FOG, just brief movement
                 fog_detector.state = FOG_NOT_WALKING;
                 fog_detector.consecutive_walking_windows = 0;
             }
+            // Else: Still in WALKING state, accumulating freeze evidence
         }
         else
         {
-            // Not walking anymore, no freeze indicators - return to idle
-            fog_detector.state = FOG_NOT_WALKING;
+            // Not walking anymore, no freeze indicators - increment counter
+            fog_detector.consecutive_freeze_windows++;
             fog_detector.consecutive_walking_windows = 0;
+            
+            // Require 2 consecutive non-walking windows before returning to NOT_WALKING
+            // This prevents flickering between states
+            if (fog_detector.consecutive_freeze_windows >= 2)
+            {
+                fog_detector.state = FOG_NOT_WALKING;
+                fog_detector.consecutive_walking_windows = 0;
+                fog_detector.walking_start_time = 0;  // Clear walking start time
+            }
+            // Else: Still in WALKING state, verifying stop
         }
         break;
     }
@@ -291,27 +310,25 @@ void process_fog_detection(float variance, uint32_t current_time)
         uint32_t confirmed_duration = current_time - freeze_confirmed_start;
         const uint32_t MAX_FOG_DURATION_MS = 15000;  // 15-second timeout
 
-        if (currently_walking)
+        // Recovery detection: Use more relaxed criteria than normal walking detection
+        // Any significant movement or steps indicates recovery attempt
+        bool recovery_movement = (steps_in_window > 0 || variance > FREEZE_VARIANCE_MAX);
+        
+        if (recovery_movement)
         {
-            // Patient has recovered and resumed walking
+            // Patient has recovered and resumed walking/movement
             fog_detector.state = FOG_WALKING;
             fog_detector.consecutive_freeze_windows = 0;
+            fog_detector.consecutive_walking_windows = 1;  // Reset to 1 (currently walking)
+            fog_detector.walking_start_time = current_time;  // Reset walking start time
             freeze_confirmed_start = 0;  // Reset static variable
             printf(" | Recovered");  // Log recovery event
         }
-        else if (confirmed_duration >= MAX_FOG_DURATION_MS)
+        else
         {
-            // Timeout: Patient hasn't moved for 15+ seconds
-            // Assume they've stopped intentionally or need assistance
-            // Reset to initial state to allow fresh detection
-            fog_detector.state = FOG_NOT_WALKING;
-            fog_detector.consecutive_freeze_windows = 0;
-            fog_detector.consecutive_walking_windows = 0;
-            fog_detector.walking_start_time = 0;
-            freeze_confirmed_start = 0;
-            printf(" | Timeout-Reset");
+            // Continue in FREEZE_CONFIRMED state (FOG episode ongoing)
+            printf(" | 🧊");  // Freezing symbol
         }
-        // Else: Continue in FREEZE_CONFIRMED state (FOG episode ongoing)
         break;
     }
     }

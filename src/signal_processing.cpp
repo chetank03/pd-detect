@@ -166,21 +166,32 @@ void analyze_frequency_content(float* accel_data, float* gyro_data, size_t size,
     if (intensity_score < 0.0f) intensity_score = 0.0f;
     if (intensity_score > 3.0f) intensity_score = 3.0f;
 
-    // Return
+
+    // Return values
     strncpy(raw_condition, condition, 15);
-    raw_condition[15] = '\\0';
+    raw_condition[15] = '\0';
     *raw_intensity = intensity_score;
 
-    // Print with more debug info
+    // Print frequency analysis with correct labels and precise frequency
     if (strcmp(condition, "TREMOR") == 0) {
-        printf("🔴 TREMOR %.1fHz ",
-               intensity_score, tremor_freq, tremor_peak, tremor_threshold);
+        printf("🔴 TREMOR %.2fHz ", tremor_freq);
     } else if (strcmp(condition, "DYSK") == 0) {
-        printf("🟠 DYSK %.1fHz ",
-               intensity_score, dysk_freq, dysk_peak, dysk_threshold);
+        printf("🟠 DYSK %.2fHz ", dysk_freq);
     } else {
-        printf("Normal ",
-               tremor_peak, tremor_threshold, dysk_peak, dysk_threshold, noise_floor);
+        // Show the dominant frequency even when nothing detected
+        // Search entire spectrum for actual peak
+        float max_mag = 0.0f;
+        float max_freq = 0.0f;
+        for (size_t k = 1; k <= (FFT_SIZE/2 - 1); k++) {
+            float f = k * freq_res;
+            if (f < 2.0f || f > 10.0f) continue;  // Only show 2-10 Hz range
+            float mag = magnitude_spectrum[k - 1];
+            if (mag > max_mag) {
+                max_mag = mag;
+                max_freq = f;
+            }
+        }
+        printf("⚪ %.2fHz ", max_freq);
     }
 }
 
